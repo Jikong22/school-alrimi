@@ -1,0 +1,70 @@
+{
+  "task": "task-3-age-gate",
+  "scenario": "만 14세 미만 가입 차단",
+  "tool": "Bash (curl) / pwsh (Invoke-RestMethod)",
+  "preconditions": [
+    "01-schema.sql, 02-triggers.sql, 03-rls-policies.sql 적용 완료",
+    "public.check_age_on_signup trigger가 auth.users BEFORE INSERT에 활성"
+  ],
+  "request": {
+    "method": "POST",
+    "url": "${SUPABASE_URL}/auth/v1/signup",
+    "headers": {
+      "apikey": "${SUPABASE_ANON_KEY}",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "minor-<timestamp>@school-alrimi.test",
+      "password": "Test1234!Aa",
+      "options": {
+        "data": {
+          "birthdate": "2020-01-01",
+          "display_name": "미성년테스트",
+          "consent_privacy": true
+        }
+      }
+    }
+  },
+  "expected_response": {
+    "http_status": 400,
+    "body": {
+      "error": "user_already_exists",
+      "_supabase_note": "GoTrue wraps the Postgres RAISE EXCEPTION into this user-friendly shape; the underlying SQLERRM is 'age_too_young: 만 14세 이상만 가입할 수 있습니다 (computed_age=6, birthdate=2020-01-01)' and SQLSTATE is '22023'.",
+      "msg": "Database error saving new user"
+    }
+  },
+  "asserts": [
+    "http_status == 400 (NOT 200; no user must have been created)",
+    "auth.users 에 해당 이메일이 존재하지 않음 (verify via Dashboard -> Authentication -> Users)",
+    "public.profiles 에 해당 user_id row 없음",
+    "public.user_roles 에 해당 user_id row 없음"
+  ],
+  "verification_query": "select count(*) from auth.users where email = 'minor-<timestamp>@school-alrimi.test';  -- expect: 0",
+  "additional_block_cases": [
+    {
+      "case": "missing birthdate",
+      "request_body_options_data": {},
+      "expected_error_token": "birthdate_required"
+    },
+    {
+      "case": "missing consent_privacy",
+      "request_body_options_data": { "birthdate": "2008-01-01" },
+      "expected_error_token": "consent_privacy_required"
+    },
+    {
+      "case": "born exactly 13 years and 364 days ago",
+      "request_body_options_data_birthdate": "<today - 13 years - 1 day>",
+      "expected_error_token": "age_too_young"
+    },
+    {
+      "case": "born exactly 14 years ago (boundary, should pass)",
+      "request_body_options_data_birthdate": "<today - 14 years>",
+      "expected_http_status": 200
+    }
+  ],
+  "spike_status": {
+    "executed_against_live_project": false,
+    "reason": "agent environment has no Supabase account; live execution requires a human-created project",
+    "next_step": "Run scripts/test-02-signup-underage.ps1 (or .sh) once a project exists. Confirm http_status=400 AND that no row was created in auth.users / public.profiles / public.user_roles."
+  }
+}

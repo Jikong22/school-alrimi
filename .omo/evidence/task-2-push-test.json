@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-06-13T00:00:00.000Z",
+  "spike": "pwa-push",
+  "vapid_keys_generated": true,
+  "vapid_public_key_length": 88,
+  "vapid_private_key_length": 44,
+  "serwist_configured": true,
+  "serwist_mode": "configurator",
+  "sw_handlers": {
+    "push": true,
+    "notificationclick": true,
+    "pushsubscriptionchange": true
+  },
+  "ua_detection": {
+    "isKakaoTalk": true,
+    "isNaver": true,
+    "detectKoreanInAppBrowser": true,
+    "isPushSupported": true
+  },
+  "known_limitations": {
+    "kakaotalk_naver_no_sw": "KakaoTalk/Naver in-app browsers are WKWebView - no Service Worker support",
+    "samsung_internet_sw_kill": "Samsung Internet kills background SW after ~2 minutes",
+    "ios_safari_push": "iOS Safari push only works after Add to Home Screen",
+    "pushsubscriptionchange": "Chrome/Firefox fire on rotation; Safari does NOT - must check getSubscription() on app open",
+    "spam_prevention_law": "스팸방지법 7판: Notification.requestPermission() alone is NOT legally sufficient - separate in-app opt-in required"
+  }
+}

@@ -1,0 +1,51 @@
+
+# Learnings - school-alrimi
+
+## Conventions
+- Use `@serwist/next` (NOT `next-pwa`)
+- Pretendard Variable with `weight: "45 920"`
+- `word-break: keep-all` for Korean text
+- NEIS errors come as HTTP 200 with `data.RESULT.CODE`
+- `SchoolSchedule` has uppercase S
+- Wave 1: high school only (만14세 이상)
+- 스팸방지법 7판: separate in-app opt-in required before browser permission
+
+## Decisions
+- [2026-06-12] Auth path = Supabase Auth + Postgres RLS (no custom auth server). Free tier is enough for MVP (500 MB DB / 50 K MAU / 1 GB storage).
+- [2026-06-12] Age gate is enforced by a `BEFORE INSERT` trigger on `auth.users` reading `raw_user_meta_data->>'birthdate'`. The Supabase "Before User Created Hook" is a paid Advanced add-on — trigger is the free-tier path.
+- [2026-06-12] Roles live in a separate `public.user_roles` table (not on `auth.users` app_metadata) so we can add columns (e.g., `school_id`, `linked_student_id`) without touching the auth schema. Wave 1 default is `'student'`.
+- [2026-06-12] RLS performance pattern: wrap `auth.uid()` as `(select auth.uid())` so the planner caches the result per query. Combine with a `SECURITY DEFINER` + `STABLE` `get_my_role()` for the role lookup.
+- [2026-06-12] All RLS-enabled tables use `FORCE ROW LEVEL SECURITY` so even the table owner is subject to policies. Service-role writes only happen via explicit admin scripts.
+- [2026-06-12] All trigger functions are `SECURITY DEFINER` with `set search_path = ''` (Supabase official guidance) to prevent search-path injection.
+
+## Findings (2026-06-12 — NEIS API spike)
+- **Sample key works** for spike validation: omit `KEY` param entirely → 5-row cap, sufficient for probes
+- **NEIS returns HTTP 200 for errors** — always check top-level `RESULT.CODE` first; rows live under endpoint key
+- **Error codes (all HTTP 200)**: `INFO-000`=ok, `INFO-200`=empty(not error), `ERROR-290`=auth, `ERROR-300`=missing param, `ERROR-337`=rate limit, `ERROR-500/600`=server
+- **Response shape**: success = `{<endpoint>: [{head:[...RESULT], row:[...]}]}`. Error = `{RESULT: {CODE, MESSAGE}}` (no endpoint key)
+- **`SchoolSchedule` UPPERCASE S** — `schoolSchedule`/`school_schedule` silently fail. Same trap-prone camelCase for `hisTimetable` (lowercase h, lowercase t)
+- **Empty periods in timetable**: 강서고 6/11 returned 6 periods (no PERIO=5). Don't assume 1..7 contiguous — render grid with gaps
+- **Meal allergen codes** in parens at end of each DDISH_NM item: 1=난류 2=우유 3=메밀 4=땅콩 5=대두 6=밀 7=잣 8=호두 9=게 10=새우 11=오징어 12=고등어 13=토마토 14=산사유 15=닭 16=쇠고기 17=돼지 18=복숭아
+- **DDISH_NM separator**: `<br/>` (with optional whitespace) — split with `/<br\s*\/?>/i`
+- **`ORPLC_INFO`/`NTR_INFO`/`CAL_INFO`**: also `<br/>`-separated HTML
+- **No timezone in dates** — KST assumed; store as KST date strings, display in KST
+- **Caching TTLs**: meals 1-6h (1h during school day, 6h off-hours), timetable 24h, schedule 24h. Prewarm cron at 6AM KST for popular schools
+- **Sample key issue**: 5-row hard cap, ~10K calls/day limit. Production key from data.go.kr (`dataset 15139198`) needed before launch
+- **Server-side only**: never call NEIS from browser (CORS + key exposure). Use Next.js Route Handlers/Server Components
+
+## Findings (2026-06-12 — PWA + Push spike)
+- **@serwist/next configurator mode** works: `serwist.config.mjs` + `withSerwistInit` in next.config.ts + `serwist build` CLI
+- **VAPID keys** generated via `web-push.generateVAPIDKeys()` — must regenerate for production, store private key in secrets manager
+- **KakaoTalk UA detection**: `ua.toUpperCase().includes("KAKAOTALK")` — reliable, both Android/iOS
+- **Naver UA detection**: `ua.toUpperCase().includes("NAVER")` — reliable, both Android/iOS
+- **KakaoTalk/Naver in-app browsers** are WKWebView → no Service Worker support at all. Must detect and show "open in browser" fallback
+- **Samsung Internet** kills background SW after ~2 min — push still arrives (OS-level), but use `event.waitUntil()` for async work
+- **iOS Safari** push only works after "Add to Home Screen" — `Notification.requestPermission()` fails in regular Safari
+- **pushsubscriptionchange**: Chrome/Firefox fire it on subscription rotation; Safari does NOT. Must check `getSubscription()` on app open as fallback
+- **404/410 cleanup**: web-push throws `WebPushError` with statusCode 404/410 → delete subscription from DB immediately. 429 = rate limit, do NOT delete
+- **스팸방지법 7판**: `Notification.requestPermission()` alone is NOT legally sufficient — separate in-app opt-in required before browser permission call
+
+## Issues
+
+## Problems
+

@@ -1,0 +1,121 @@
+{
+  "task": "task-3-rls",
+  "scenario": "RLS cross-user isolation (student A cannot read/write student B's data)",
+  "tool": "Bash (curl) / pwsh (Invoke-RestMethod)",
+  "preconditions": [
+    "01-schema.sql, 02-rls-policies.sql 적용 완료",
+    "두 명의 인증된 사용자가 존재 (userA, userB). 각 access_token 확보.",
+    "public.homework 테이블에 userA 소유 row 1개 시드 완료 (service_role 사용)"
+  ],
+  "tests": [
+    {
+      "id": "RLS-1",
+      "name": "userA reads own homework",
+      "request": {
+        "method": "GET",
+        "url": "${SUPABASE_URL}/rest/v1/homework?select=id,title",
+        "headers": { "apikey": "${SUPABASE_ANON_KEY}", "Authorization": "Bearer ${USER_A_TOKEN}" }
+      },
+      "expected": {
+        "http_status": 200,
+        "body_non_empty": true,
+        "row_count": 1
+      }
+    },
+    {
+      "id": "RLS-2",
+      "name": "userB reads homework (must see zero rows because all are owned by userA)",
+      "request": {
+        "method": "GET",
+        "url": "${SUPABASE_URL}/rest/v1/homework?select=id,title",
+        "headers": { "apikey": "${SUPABASE_ANON_KEY}", "Authorization": "Bearer ${USER_B_TOKEN}" }
+      },
+      "expected": {
+        "http_status": 200,
+        "body": "[]",
+        "row_count": 0
+      }
+    },
+    {
+      "id": "RLS-3",
+      "name": "userB attempts INSERT with student_id=userA.id (must be denied by WITH CHECK)",
+      "request": {
+        "method": "POST",
+        "url": "${SUPABASE_URL}/rest/v1/homework",
+        "headers": {
+          "apikey": "${SUPABASE_ANON_KEY}",
+          "Authorization": "Bearer ${USER_B_TOKEN}",
+          "Content-Type": "application/json"
+        },
+        "body": { "student_id": "${USER_A_ID}", "title": "evil" }
+      },
+      "expected": {
+        "http_status": 401,
+        "error_token": "new row violates row-level security policy for table \"homework\""
+      }
+    },
+    {
+      "id": "RLS-4",
+      "name": "userB attempts UPDATE on userA's row (must be denied)",
+      "request": {
+        "method": "PATCH",
+        "url": "${SUPABASE_URL}/rest/v1/homework?id=eq.${USER_A_ROW_ID}",
+        "headers": {
+          "apikey": "${SUPABASE_ANON_KEY}",
+          "Authorization": "Bearer ${USER_B_TOKEN}",
+          "Content-Type": "application/json"
+        },
+        "body": { "title": "tampered" }
+      },
+      "expected": {
+        "http_status": 401,
+        "error_token": "new row violates row-level security policy"
+      }
+    },
+    {
+      "id": "RLS-5",
+      "name": "anon (unauthenticated) reads profiles (must see zero rows)",
+      "request": {
+        "method": "GET",
+        "url": "${SUPABASE_URL}/rest/v1/profiles?select=user_id,display_name",
+        "headers": { "apikey": "${SUPABASE_ANON_KEY}" }
+      },
+      "expected": {
+        "http_status": 200,
+        "body": "[]",
+        "row_count": 0
+      }
+    },
+    {
+      "id": "RLS-6",
+      "name": "userA calls get_my_role() — returns 'student'",
+      "request": {
+        "method": "POST",
+        "url": "${SUPABASE_URL}/rest/v1/rpc/get_my_role",
+        "headers": {
+          "apikey": "${SUPABASE_ANON_KEY}",
+          "Authorization": "Bearer ${USER_A_TOKEN}",
+          "Content-Type": "application/json"
+        },
+        "body": {}
+      },
+      "expected": {
+        "http_status": 200,
+        "body": "\"student\""
+      }
+    }
+  ],
+  "asserts_summary": [
+    "RLS-1 row_count == 1",
+    "RLS-2 row_count == 0",
+    "RLS-3 http_status in {401, 403}",
+    "RLS-4 http_status in {401, 403}",
+    "RLS-5 row_count == 0",
+    "RLS-6 body == \"student\""
+  ],
+  "spike_status": {
+    "executed_against_live_project": false,
+    "reason": "agent environment has no Supabase account; live execution requires a human-created project",
+    "next_step": "Run scripts/test-03-rls-isolation.ps1 (or .sh) once a project + two test users + service_role key exist. The script asserts RLS-1 through RLS-3 in one shot; RLS-4..RLS-6 are extra manual curls to capture here."
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "task": "task-3-signup",
+  "scenario": "이메일 인증 회원가입 (만 14세 이상)",
+  "tool": "Bash (curl) / pwsh (Invoke-RestMethod)",
+  "preconditions": [
+    "Supabase 프로젝트 생성 완료 (free tier)",
+    "01-schema.sql, 02-triggers.sql, 03-rls-policies.sql 적용 완료",
+    "SUPABASE_URL, SUPABASE_ANON_KEY 환경변수 설정"
+  ],
+  "request": {
+    "method": "POST",
+    "url": "${SUPABASE_URL}/auth/v1/signup",
+    "headers": {
+      "apikey": "${SUPABASE_ANON_KEY}",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "email": "adult-<timestamp>@school-alrimi.test",
+      "password": "Test1234!Aa",
+      "options": {
+        "data": {
+          "birthdate": "2008-01-01",
+          "display_name": "성인테스트",
+          "consent_privacy": true
+        }
+      }
+    }
+  },
+  "expected_response": {
+    "http_status": 200,
+    "body": {
+      "user": {
+        "id": "<uuid v4>",
+        "aud": "authenticated",
+        "role": "authenticated",
+        "email": "adult-<timestamp>@school-alrimi.test",
+        "email_confirmed_at": null,
+        "phone": "",
+        "confirmed_at": null,
+        "last_sign_in_at": null,
+        "app_metadata": {
+          "provider": "email",
+          "providers": ["email"],
+          "age_verified_at": "<ISO8601 UTC>",
+          "birthdate": "2008-01-01",
+          "consent_privacy": true
+        },
+        "user_metadata": {
+          "birthdate": "2008-01-01",
+          "display_name": "성인테스트",
+          "consent_privacy": true
+        },
+        "identities": [
+          { "provider": "email", "user_id": "<uuid v4>" }
+        ],
+        "created_at": "<ISO8601 UTC>",
+        "updated_at": "<ISO8601 UTC>"
+      },
+      "session": {
+        "access_token": "<JWT>",
+        "token_type": "bearer",
+        "expires_in": 3600,
+        "expires_at": <unix epoch seconds>,
+        "refresh_token": "<opaque>",
+        "user": "<same user object as above>"
+      }
+    }
+  },
+  "asserts": [
+    "http_status == 200",
+    "response.body.access_token is a non-empty JWT-shaped string",
+    "response.body.user.id is a valid uuid v4",
+    "response.body.user.app_metadata.birthdate == '2008-01-01' (stamped by trigger)",
+    "response.body.user.email_confirmed_at is null (email confirm required before login)"
+  ],
+  "spike_status": {
+    "executed_against_live_project": false,
+    "reason": "agent environment has no Supabase account; live execution requires a human-created project",
+    "next_step": "Run scripts/test-01-signup-adult.ps1 (or .sh) once SUPABASE_URL and SUPABASE_ANON_KEY are populated. The script's stdout is the real evidence to paste here replacing this expected_response block."
+  }
+}

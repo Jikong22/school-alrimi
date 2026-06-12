@@ -1,0 +1,34 @@
+{
+  "name": "spike-pwa-push",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "build:sw": "serwist build serwist.config.mjs"
+  },
+  "dependencies": {
+    "@serwist/next": "^9.5.11",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "serwist": "^9.5.11",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@serwist/cli": "^9.5.11",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
+    "concurrently": "^9",
+    "esbuild": "^0.25",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
