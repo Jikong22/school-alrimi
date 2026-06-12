@@ -1,0 +1,85 @@
+Task 7 — Korean Typography + Pretendard Setup
+==============================================
+
+Date: 2026-06-13
+Scope: Toast notifications (Sonner) + Korean-friendly theme tokens
+Outcome: PASS
+
+------------------------------------------------------------------
+1. Build evidence — `bun run build` (Next.js 16.2.9, Turbopack)
+------------------------------------------------------------------
+$ next build
+  Creating an optimized production build ...
+  Compiled successfully in 2.1s
+  Running TypeScript ...
+  Finished TypeScript in 3.6s ...
+  Collecting page data using 6 workers ...
+  Generating static pages using 6 workers (5/5) in 632ms
+  Finalizing page optimization ...
+
+Route (app)
+  /
+  /_not-found
+  /school
+
+  (Static)  prerendered as static content
+
+EXIT=0
+
+------------------------------------------------------------------
+2. Test evidence — `bun run test` (vitest 3.2.6)
+------------------------------------------------------------------
+src/__tests__/dummy.test.ts          (1 test)  2ms
+src/__tests__/school/search.test.tsx (8 tests) 214ms
+
+Test Files  2 passed (2)
+     Tests  9 passed (9)
+  Duration  2.07s
+
+EXIT=0
+
+------------------------------------------------------------------
+3. Pretendard / Korean typography (Task 4 → inherited, still good)
+------------------------------------------------------------------
+- src/app/layout.tsx: localFont PretendardVariable.woff2, weight: "45 920", lang="ko"
+- src/app/globals.css: word-break: keep-all, line-height: 1.7, letter-spacing: -0.01em
+- :lang(ko), body selector targets both root and Korean content roots
+- @import "sonner/dist/styles.css" added to globals.css
+
+------------------------------------------------------------------
+4. Sonner toaster config (new in this task)
+------------------------------------------------------------------
+- Position: top-center (Korean UX convention)
+- Duration: 3000ms
+- richColors: true
+- closeButton: true
+- font-family: var(--font-sans) (Pretendard) inherited + locked on [data-sonner-toast]
+- Per-type background tints via color-mix() over --popover
+- success/error/info/warning variants styled with success/destructive/info/warning tokens
+
+------------------------------------------------------------------
+5. Toast helper API surface (src/lib/toast.ts)
+------------------------------------------------------------------
+toast.success(message)  — green
+toast.error(message)    — red
+toast.info(message)     — blue
+toast.warning(message)  — amber
+toast.loading(message)  — spinner
+toast.promise(promise, { loading, success, error })  — async flow
+toast.dismiss(id?)      — manual close
+
+All accept React.ReactNode → Korean strings pass through unchanged.
+
+------------------------------------------------------------------
+6. Theme tokens added to globals.css (Korean-friendly palette)
+------------------------------------------------------------------
+Light:
+  --primary:  hsl(212 95% 48%)   /* 학교 sky blue */
+  --success:  hsl(142 70% 38%)   /* green for "저장됨" */
+  --info:     hsl(212 95% 48%)   /* blue for "새 알림" */
+  --warning:  hsl(38 92% 48%)    /* amber */
+  --destructive: hsl(0 78% 50%)  /* red */
+  --radius: 0.75rem
+
+Dark (prefers-color-scheme: dark):
+  Same hues, shifted lightness for legibility.

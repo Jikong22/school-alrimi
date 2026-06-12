@@ -1,19 +1,131 @@
 @import "tailwindcss";
+@import "sonner/dist/styles.css";
 
+/* -------------------------------------------------------------------------- */
+/*  Design tokens — exposed to Tailwind v4 utilities via @theme inline        */
+/* -------------------------------------------------------------------------- */
 @theme inline {
   --font-sans: var(--font-pretendard), "Pretendard", system-ui, -apple-system,
     "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Light theme — Korean-friendly palette                                     */
+/*                                                                            */
+/*  Primary is a calm sky blue (학교 / 학습 association).                     */
+/*  Success/info use Korean-conventional green/blue tints that read clearly   */
+/*  even when the toast is a single short sentence.                           */
+/* -------------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(220 20% 10%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(220 20% 10%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 20% 10%);
+
+  --primary: hsl(212 95% 48%);
+  --primary-foreground: hsl(0 0% 100%);
+
+  --secondary: hsl(210 30% 96%);
+  --secondary-foreground: hsl(220 20% 10%);
+
+  --muted: hsl(210 30% 96%);
+  --muted-foreground: hsl(220 10% 45%);
+
+  --accent: hsl(210 30% 96%);
+  --accent-foreground: hsl(220 20% 10%);
+
+  --destructive: hsl(0 78% 50%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --success: hsl(142 70% 38%);
+  --success-foreground: hsl(0 0% 100%);
+
+  --warning: hsl(38 92% 48%);
+  --warning-foreground: hsl(0 0% 100%);
+
+  --info: hsl(212 95% 48%);
+  --info-foreground: hsl(0 0% 100%);
+
+  --border: hsl(220 13% 90%);
+  --input: hsl(220 13% 90%);
+  --ring: hsl(212 95% 48%);
+
+  --radius: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: hsl(220 20% 6%);
+    --foreground: hsl(210 20% 96%);
+
+    --card: hsl(220 20% 8%);
+    --card-foreground: hsl(210 20% 96%);
+
+    --popover: hsl(220 20% 8%);
+    --popover-foreground: hsl(210 20% 96%);
+
+    --primary: hsl(212 95% 60%);
+    --primary-foreground: hsl(220 20% 8%);
+
+    --secondary: hsl(220 16% 14%);
+    --secondary-foreground: hsl(210 20% 96%);
+
+    --muted: hsl(220 16% 14%);
+    --muted-foreground: hsl(220 10% 65%);
+
+    --accent: hsl(220 16% 14%);
+    --accent-foreground: hsl(210 20% 96%);
+
+    --destructive: hsl(0 70% 55%);
+    --destructive-foreground: hsl(0 0% 100%);
+
+    --success: hsl(142 60% 50%);
+    --success-foreground: hsl(220 20% 8%);
+
+    --warning: hsl(38 92% 58%);
+    --warning-foreground: hsl(220 20% 8%);
+
+    --info: hsl(212 95% 60%);
+    --info-foreground: hsl(220 20% 8%);
+
+    --border: hsl(220 16% 18%);
+    --input: hsl(220 16% 18%);
+    --ring: hsl(212 95% 60%);
   }
 }
 
@@ -24,7 +136,9 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Korean typography: keep word units together, generous line-height, slight tightening */
+/* -------------------------------------------------------------------------- */
+/*  Korean typography                                                         */
+/* -------------------------------------------------------------------------- */
 :lang(ko),
 body {
   word-break: keep-all;
@@ -32,4 +146,61 @@ body {
   line-height: 1.7;
   letter-spacing: -0.01em;
   text-underline-offset: 3px;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Sonner toaster overrides                                                  */
+/*                                                                            */
+/*  Pretendard is inherited from the body, but we lock it on the toast root   */
+/*  in case it's portaled into a subtree that resets the font-family.         */
+/* -------------------------------------------------------------------------- */
+[data-sonner-toaster] {
+  font-family: var(--font-sans);
+  --width: 360px;
+}
+
+[data-sonner-toast] {
+  font-family: var(--font-sans);
+  word-break: keep-all;
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+[data-sonner-toast][data-type="success"] {
+  background: color-mix(in oklch, var(--success) 12%, var(--popover));
+  border-color: color-mix(in oklch, var(--success) 40%, var(--border));
+  color: var(--foreground);
+}
+
+[data-sonner-toast][data-type="error"] {
+  background: color-mix(in oklch, var(--destructive) 12%, var(--popover));
+  border-color: color-mix(in oklch, var(--destructive) 40%, var(--border));
+  color: var(--foreground);
+}
+
+[data-sonner-toast][data-type="info"] {
+  background: color-mix(in oklch, var(--info) 12%, var(--popover));
+  border-color: color-mix(in oklch, var(--info) 40%, var(--border));
+  color: var(--foreground);
+}
+
+[data-sonner-toast][data-type="warning"] {
+  background: color-mix(in oklch, var(--warning) 14%, var(--popover));
+  border-color: color-mix(in oklch, var(--warning) 40%, var(--border));
+  color: var(--foreground);
+}
+
+[data-sonner-toast] [data-title] {
+  font-weight: 600;
+}
+
+[data-sonner-toast] [data-description] {
+  color: var(--muted-foreground);
 }
