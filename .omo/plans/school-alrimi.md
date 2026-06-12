@@ -286,7 +286,7 @@ Max Concurrent: 7 (Wave 2)
   - Files: `spike-neis-api.md`, spike test files
   - Pre-commit: `bun test`
 
-- [ ] 2. PWA + Push Notification Spike
+- [x] 2. PWA + Push Notification Spike
 
   **What to do**:
   - `@serwist/next` v9.5.6+ configurator mode 설정
@@ -439,7 +439,7 @@ Max Concurrent: 7 (Wave 2)
   - Files: `spike-supabase-auth.md`, `.env.local`, Supabase migration files
   - Pre-commit: `bun test`
 
-- [ ] 4. Project Scaffolding (Next.js + Supabase + shadcn/ui + TDD setup)
+- [x] 4. Project Scaffolding (Next.js + Supabase + shadcn/ui + TDD setup)
 
   **What to do**:
   - `npx create-next-app@latest` 실행 (App Router, TypeScript, Tailwind CSS, src/ directory)

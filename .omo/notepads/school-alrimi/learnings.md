@@ -45,7 +45,23 @@
 - **404/410 cleanup**: web-push throws `WebPushError` with statusCode 404/410 → delete subscription from DB immediately. 429 = rate limit, do NOT delete
 - **스팸방지법 7판**: `Notification.requestPermission()` alone is NOT legally sufficient — separate in-app opt-in required before browser permission call
 
+## Findings (2026-06-13 — Project Scaffolding / Task 4)
+- **`npx shadcn@latest` (v2+) does NOT accept `--style` / `--base-color`** — it asks for a preset interactively. In non-TTY (CI/agent) contexts, pipe the preset number (1 = Nova) to default-select. The "Nova" preset is Tailwind v4 + Radix + lucide compatible
+- **New shadcn ships its own unified `radix-ui` package** (not `@radix-ui/react-*` per-component). Imports use `import { Slot } from "radix-ui"` not `import { Slot } from "@radix-ui/react-slot"`. Smaller install footprint
+- **`shadcn init` and `shadcn add` skip dep install in non-TTY mode** — they copy files but don't run `npm install`. Manually `bun add` the listed deps
+- **`@supabase/ssr` v0.6.1 ships NO TypeScript types** in its published dist (only `.js` in `dist/main/`). Use a `declare module "@supabase/ssr"` ambient declaration in `src/types/modules.d.ts` covering the two factories (`createBrowserClient`, `createServerClient`) and the cookies adapter shape
+- **`CookieOptions` is not exported from `@supabase/ssr`** even though it appears in source — pass cookie options as `unknown` and let Next.js's `cookies().set()` validate
+- **`dom-accessibility-api@0.6.3` has a broken dist** — `dist/accessible-name-and-description.mjs` imports `./polyfills/SetLike.mjs` which is not published. This breaks Vitest 3 + jsdom 26 + `@testing-library/jest-dom` chain. **Fix: pin `dom-accessibility-api` to `0.5.16`** (last version with complete dist). Add a `// do-not-bump` comment next to the version pin
+- **Pretendard Variable woff2 is NOT in the GitHub release zip** — the v1.3.9 release page lists no `PretendardVariable.zip` asset. Get it from jsDelivr: `https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/packages/pretendard/dist/web/variable/woff2/PretendardVariable.woff2` (~2 MB)
+- **`bun add` (without flags) fails with `EINVAL: Failed to replace old lockfile on disk`** when the project was scaffolded without a `bun.lock`/`bun.lockb`. Workaround: edit `package.json` directly + `bun install --no-save` to install, then commit the JSON change. The lockfile is never created but installs work
+- **Bun's native `bun test` runner is separate from vitest** — `bun test` uses bun's built-in test runner with no jsdom, `bun run test` (or `bunx vitest`) uses vitest with the `vitest.config.ts` setup. A React/JSX test that passes in `bun run test` will fail in `bun test` with `ReferenceError: document is not defined`. Strategy: pure-JS smoke tests in `.test.ts` (work in both); component tests in `.test.tsx` (vitest-only)
+- **Korean font fallback chain**: `Pretendard → -apple-system → Apple SD Gothic Neo → Noto Sans KR → Malgun Gothic → sans-serif`. Apple platforms fall through to SD Gothic Neo, Windows to Malgun Gothic, Linux to Noto Sans KR
+- **Korean typography CSS**: `word-break: keep-all` (don't break Hangul syllables), `line-break: strict` (proper Korean spacing), `line-height: 1.7` (generous for CJK), `letter-spacing: -0.01em` (slight tightening), `text-underline-offset: 3px` (descenders sit lower)
+- **Set `<html lang="ko">`** in layout for screen reader Korean pronunciation + `:lang(ko)` CSS selector to work
+
 ## Issues
+- **[2026-06-13] `dom-accessibility-api` upstream regression**: v0.6.3 ships a broken dist (missing `dist/polyfills/SetLike.mjs`). Pin to `0.5.16` until upstream fixes. Tracked in `package.json` devDependencies
+- **[2026-06-13] No `bun.lock`/`bun.lockb`** in the project — `bun add` (default mode) errors with `EINVAL: Failed to replace old lockfile on disk`. Workaround: edit `package.json` directly, then `bun install --no-save`. Not blocking but annoying for collaborators running `bun install`
 
 ## Problems
 

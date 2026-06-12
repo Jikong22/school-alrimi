@@ -8,7 +8,7 @@
       "plan_name": "school-alrimi",
       "status": "active",
       "started_at": "2026-06-11T16:29:46.125Z",
-      "updated_at": "2026-06-12T16:25:12.685Z",
+      "updated_at": "2026-06-12T16:49:23.348Z",
       "session_ids": [
         "opencode:ses_1487b5349ffeigGZsuMQ8XX9JU"
       ],
@@ -38,8 +38,23 @@
           "agent": "Sisyphus-Junior",
           "category": "deep",
           "started_at": "2026-06-12T13:40:17.049Z",
-          "status": "running",
-          "updated_at": "2026-06-12T16:25:12.690Z"
+          "status": "completed",
+          "updated_at": "2026-06-12T16:31:56.275Z",
+          "ended_at": "2026-06-12T16:31:56.275Z",
+          "elapsed_ms": 10299226
+        },
+        "todo:4": {
+          "task_key": "todo:4",
+          "task_label": "4",
+          "task_title": "Project Scaffolding (Next.js + Supabase + shadcn/ui + TDD setup)",
+          "session_id": "opencode:ses_14352a134ffedsg5nBPxrWvTVZ",
+          "agent": "Sisyphus-Junior",
+          "category": "quick",
+          "updated_at": "2026-06-12T16:49:23.348Z",
+          "started_at": "2026-06-12T16:48:54.892Z",
+          "status": "completed",
+          "ended_at": "2026-06-12T16:49:23.348Z",
+          "elapsed_ms": 28456
         }
       }
     }
@@ -47,7 +62,7 @@
   "active_plan": "D:\\School-Agent\\.omo\\plans\\school-alrimi.md",
   "started_at": "2026-06-11T16:29:46.125Z",
   "status": "active",
-  "updated_at": "2026-06-12T16:25:12.685Z",
+  "updated_at": "2026-06-12T16:49:23.348Z",
   "session_ids": [
     "opencode:ses_1487b5349ffeigGZsuMQ8XX9JU"
   ],
@@ -77,8 +92,23 @@
       "agent": "Sisyphus-Junior",
       "category": "deep",
       "started_at": "2026-06-12T13:40:17.049Z",
-      "status": "running",
-      "updated_at": "2026-06-12T16:25:12.690Z"
+      "status": "completed",
+      "updated_at": "2026-06-12T16:31:56.275Z",
+      "ended_at": "2026-06-12T16:31:56.275Z",
+      "elapsed_ms": 10299226
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "Project Scaffolding (Next.js + Supabase + shadcn/ui + TDD setup)",
+      "session_id": "opencode:ses_14352a134ffedsg5nBPxrWvTVZ",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-12T16:49:23.348Z",
+      "started_at": "2026-06-12T16:48:54.892Z",
+      "status": "completed",
+      "ended_at": "2026-06-12T16:49:23.348Z",
+      "elapsed_ms": 28456
     }
   },
   "agent": "atlas"
